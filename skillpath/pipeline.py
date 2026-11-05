@@ -60,11 +60,23 @@ def run(jobs_path, courses_path, out_dir, extractor_name='rules'):
         'jobs': str(jobs_path), 'courses': str(courses_path),
         'jobs_sha256': hashlib.sha256(Path(jobs_path).read_bytes()).hexdigest()[:16],
         'synthetic': jobs_synthetic or courses_synthetic,
+        'jobs_synthetic': jobs_synthetic, 'courses_synthetic': courses_synthetic,
+        'body_status': dict(Counter(p.get('body_status', 'has_sections') for p in postings)),
+        'sources': dict(Counter(p.get('source', 'fixture') for p in postings)),
         'postings': len(postings), 'courses_n': len(courses), 'claims': len(verified),
         'status': dict(Counter(v.status for v in verified)),
     }
+    run_info['dictionary_gaps'] = dictionary_gaps(postings, skills)
     write(out / 'run.json', run_info)
     return run_info
+
+
+def dictionary_gaps(postings, skills, limit=30):
+    """Skills the data provider tagged that our dictionary cannot map: candidates for a human to add.
+    Provider tags are not evidence; they only point at where the dictionary is blind."""
+    counts = Counter(tag for p in postings for tag in set(p.get('provider_skills') or [])
+                     if skills.canonical(tag) is None)
+    return [{'skill': tag, 'postings': n} for tag, n in counts.most_common(limit)]
 
 
 def main():

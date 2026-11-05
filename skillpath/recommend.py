@@ -31,13 +31,13 @@ def gaps(role, user_skills, demand_rows, skills):
             have.add(canon)
         else:
             unknown.append(name)
-    rows = [r for r in demand_rows if r['role'] == role and r['required_n'] + r['preferred_n'] > 0]
+    rows = [r for r in demand_rows if r['role'] == role and r['mention_n'] > 0]
     return [r for r in rows if r['skill'] not in have], sorted(have), unknown
 
 
 def reason_text(row, course, quote):
     need = (f"{row['role']} 공고 {row['postings']}건 중 {row['skill']} 필수 {row['required_n']}건, "
-            f"우대 {row['preferred_n']}건.")
+            f"우대 {row['preferred_n']}건, 전체 언급 {row['mention_n']}건.")
     if course is None:
         return need + f" {row['skill']} 내용을 다룬다고 확인된 과정이 아직 없습니다."
     field, text = quote

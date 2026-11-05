@@ -1,9 +1,13 @@
-"""Split posting sections into source sentences and decide required/preferred from the source text."""
+"""Split posting sections into source sentences and decide the requirement label from the source text."""
 import re
 
-SECTIONS = {'qualifications': 'required', 'preferred': 'preferred'}
-SECTION_LABELS = {'qualifications': '자격요건', 'preferred': '우대사항'}
-PREFERRED_CUES = ('우대', '선호', '있으면 좋', '가산점', 'plus', 'preferred')
+# section -> default label. `unknown` text has no heading we recognise, so only line cues can label it.
+SECTIONS = {'qualifications': 'required', 'preferred': 'preferred',
+            'responsibilities': 'responsibility', 'unknown': 'unknown'}
+SECTION_LABELS = {'qualifications': '자격요건', 'preferred': '우대사항',
+                  'responsibilities': '주요업무', 'unknown': '구분 없음'}
+PREFERRED_CUES = ('우대', '선호', '있으면 좋', '가산점', 'plus', 'preferred', 'nice to have')
+REQUIRED_CUES = ('필수', 'must', 'required')
 _LINE = re.compile(r'[^\n]+')
 _BULLET = re.compile(r'^[\s\-•·*▪○◦]+')
 
@@ -19,7 +23,10 @@ def sentences(text):
 
 
 def requirement(section, sentence):
-    """A qualification sentence that itself says '우대' is preferred, not required."""
-    if section == 'qualifications' and any(cue in sentence.casefold() for cue in PREFERRED_CUES):
+    """The sentence's own words win over its section: '우대합니다' under 자격요건 is preferred."""
+    text = sentence.casefold()
+    if section != 'preferred' and any(cue in text for cue in PREFERRED_CUES):
         return 'preferred'
+    if section == 'unknown' and any(cue in text for cue in REQUIRED_CUES):
+        return 'required'
     return SECTIONS[section]
