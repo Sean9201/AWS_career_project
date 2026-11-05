@@ -1,0 +1,37 @@
+# 하네스 프로젝트 설정. 프로젝트마다 [[run]] 명령과 기준값만 바꾼다.
+[project]
+name = "__PROJECT_NAME__"
+harness_version = "__HARNESS_VERSION__"
+
+[paths]
+failures = "docs/failures"
+rules = "docs/rules"
+core_rules = "harness/rules"
+work_orders = "work_orders"
+progress = "docs/progress.md"
+failure_types = "harness/failure_types.md"
+tests = "."
+metrics = "logs/metrics.csv"
+secret_scan = ["AGENTS.md", "docs", "work_orders", "harness"]
+
+[limits]
+progress_lines = 40
+core_rules = 20
+
+# 하네스 자체 테스트. 지우지 않는다.
+[[run]]
+name = "harness"
+command = "python -m unittest discover -s harness/tests -t ."
+
+# 프로젝트 테스트 예시
+# [[run]]
+# name = "tests"
+# command = "python -m unittest discover -s tests -t ."
+
+# 평가 예시: 명령이 JSON을 출력하면 점 경로로 기준값을 비교한다.
+# [[run]]
+# name = "eval"
+# command = "python -m eval.evaluate"
+# json = true
+# [run.thresholds]
+# "f1" = 0.8

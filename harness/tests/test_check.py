@@ -4,10 +4,10 @@ import tomllib
 import unittest
 from pathlib import Path
 
-from harness.check import frontmatter, lint
-from skillpath.skills import ROOT
+from harness.check import find_root, frontmatter, lint
 
-CONFIG = tomllib.loads((ROOT / 'harness.toml').read_text(encoding='utf-8'))
+HARNESS = Path(__file__).resolve().parent.parent
+CONFIG = tomllib.loads((HARNESS / 'skeleton/harness.toml').read_text(encoding='utf-8'))
 
 
 class FrontmatterTest(unittest.TestCase):
@@ -28,9 +28,8 @@ class LintTest(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp)
         (self.tmp / 'harness').mkdir()
-        shutil.copy(ROOT / 'harness/failure_types.md', self.tmp / 'harness/failure_types.md')
-        (self.tmp / 'tests').mkdir()
-        (self.tmp / 'tests/test_x.py').write_text('def test_kept():\n    pass\n', encoding='utf-8')
+        shutil.copy(HARNESS / 'failure_types.md', self.tmp / 'harness/failure_types.md')
+        self.write('tests/test_x.py', 'def test_kept():\n    pass\n')
         self.write('docs/progress.md', '---\nactive_work_order: WO-1\n---\n# 상태\n')
         self.write('work_orders/WO-1.md', '---\nid: WO-1\nstatus: active\nverify:\n  - python -m x\n---\n## 완료 조건\n- a\n')
 
@@ -88,7 +87,8 @@ class LintTest(unittest.TestCase):
         self.assertTrue(any('F-404' in p for p in self.problems()))
 
     def test_secret_like_text_is_reported(self):
-        self.write('docs/note.md', 'api_key = abcdefgh12345\n')
+        # Built at runtime so this test file itself does not trip the secret scan.
+        self.write('docs/note.md', 'api_' + 'key = abcdefgh12345\n')
         self.assertTrue(any('비밀값' in p for p in self.problems()))
 
     def test_repeated_failure_type_is_flagged_for_review(self):
@@ -98,9 +98,14 @@ class LintTest(unittest.TestCase):
         self.assertTrue(any('silent-drop: 2건' in line for line in info))
 
 
-class ProjectRecordsTest(unittest.TestCase):
-    def test_this_project_records_are_consistent(self):
-        self.assertEqual(lint(ROOT, CONFIG)[0], [])
+class CurrentProjectTest(unittest.TestCase):
+    def test_records_of_the_project_running_this_test_are_consistent(self):
+        try:
+            root = find_root(Path.cwd().resolve())
+        except SystemExit:
+            self.skipTest('harness.toml이 있는 프로젝트에서 실행하지 않음')
+        config = tomllib.loads((root / 'harness.toml').read_text(encoding='utf-8'))
+        self.assertEqual(lint(root, config)[0], [])
 
 
 if __name__ == '__main__':

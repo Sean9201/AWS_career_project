@@ -1,7 +1,7 @@
 # 하네스 프로젝트 설정. 다른 프로젝트에서는 [[run]] 명령과 기준값만 바꾼다.
 [project]
 name = "채용공고 기반 학습경로 추천"
-harness_version = "0.1.0"
+harness_version = "0.2.0"
 
 [paths]
 failures = "docs/failures"
@@ -10,13 +10,17 @@ core_rules = "harness/rules"
 work_orders = "work_orders"
 progress = "docs/progress.md"
 failure_types = "harness/failure_types.md"
-tests = "tests"
+tests = "."
 metrics = "logs/metrics.csv"
 secret_scan = ["AGENTS.md", "README.md", "docs", "work_orders", "harness", "data/fixtures"]
 
 [limits]
 progress_lines = 40
 core_rules = 20
+
+[[run]]
+name = "harness"
+command = "python -m unittest discover -s harness/tests -t ."
 
 [[run]]
 name = "tests"

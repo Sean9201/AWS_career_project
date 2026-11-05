@@ -83,9 +83,14 @@ def failure_types(path):
     return set(re.findall(r'^\|\s*`([a-z-]+)`\s*\|', Path(path).read_text(encoding='utf-8'), re.M))
 
 
+SKIP_DIRS = {'.git', '.venv', 'venv', 'node_modules', '__pycache__', 'outputs'}
+
+
 def test_names(directory):
     names = set()
     for path in Path(directory).rglob('*.py'):
+        if SKIP_DIRS & set(path.parts):
+            continue
         names.update(re.findall(r'^\s*def (test_\w+)\(', path.read_text(encoding='utf-8'), re.M))
     return names
 

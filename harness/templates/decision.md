@@ -1,8 +1,8 @@
 ---
-id: D-000
+id: "{{title}}"
 type: decision
-status: accepted
-date: 2026-01-01
+status: proposed
+date: "{{date}}"
 ---
 # 결정 한 문장
 

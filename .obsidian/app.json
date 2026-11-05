@@ -1,0 +1,14 @@
+{
+  "alwaysUpdateLinks": true,
+  "useMarkdownLinks": false,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "docs",
+  "userIgnoreFilters": [
+    "outputs/",
+    "logs/",
+    "data/cache/",
+    "node_modules/",
+    ".venv/",
+    "__pycache__/"
+  ]
+}

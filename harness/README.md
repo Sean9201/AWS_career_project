@@ -1,10 +1,29 @@
 ---
 type: harness
-version: 0.1.0
 ---
 # AI 개발 하네스 (공통 부분)
 
-이 폴더는 프로젝트와 무관한 공통 부분입니다. 다른 프로젝트에서는 이 폴더를 그대로 복사하고 프로젝트 루트의 `harness.toml`만 바꿉니다.
+이 폴더 하나가 하네스 전체입니다. 버전은 [[CHANGELOG]] 맨 위 항목입니다. 필요한 것은 Python 3.11 이상뿐이고 추가 패키지는 없습니다.
+
+## 설치
+
+```bash
+# 새 프로젝트나 기존 프로젝트에 설치 (이미 있는 파일은 덮어쓰지 않음)
+python path/to/ai-harness/harness/init.py --root path/to/project --name "프로젝트 이름"
+
+# harness/ 폴더가 이미 프로젝트 안에 있으면
+python harness/init.py --name "프로젝트 이름"
+```
+
+설치 후 할 일: `AGENTS.md`에 목표와 고유 규칙 작성 → `harness.toml`에 프로젝트 테스트·평가 명령 추가 → `python harness/check.py`.
+
+| 설치되는 것 | 출처 |
+|---|---|
+| `AGENTS.md`, `CLAUDE.md`, `HOME.md`, `harness.toml`, `docs/progress.md` | `skeleton/` |
+| `.obsidian/app.json`, `.obsidian/templates.json` | `skeleton/.obsidian/` |
+| `.github/workflows/harness.yml` (push·PR마다 check 실행) | `skeleton/.github/` |
+| `docs/failures/`, `docs/rules/`, `docs/decisions/`, `work_orders/` | 빈 폴더 |
+| `.gitignore` 항목 (`.env`, 옵시디언 개인 화면 상태 등) | 없는 줄만 추가 |
 
 ## 한 문장 원칙
 
@@ -52,8 +71,18 @@ version: 0.1.0
 ```bash
 python harness/check.py            # 모든 검사 + metrics 기록
 python harness/check.py --no-run   # 기록 문서 검사만 (테스트·평가 실행 생략)
+python -m unittest discover -s harness/tests -t .   # 하네스 자체 테스트
 ```
+
+## 하네스 업데이트
+
+템플릿 저장소의 `harness/` 폴더로 프로젝트의 `harness/`를 교체합니다. 프로젝트 기록(`docs/`, `work_orders/`)과 `harness.toml`은 건드리지 않습니다. 교체 후 `python harness/check.py`가 통과하는지 확인하고 `harness.toml`의 `harness_version`을 올립니다.
 
 ## 옵시디언
 
-이 프로젝트 폴더를 그대로 볼트로 열면 됩니다. 노트의 프론트매터가 옵시디언 속성으로 보이고, `[[F-001]]` 같은 링크로 실패 → 규칙 → 결정이 그래프로 연결됩니다. check.py도 같은 프론트매터를 읽습니다.
+1. 옵시디언에서 "폴더를 볼트로 열기"로 **프로젝트 폴더 자체**를 엽니다. 상위 폴더를 열면 다른 프로젝트의 `.env` 등이 볼트에 들어갑니다.
+2. 설정 → 핵심 플러그인 → **템플릿**을 켭니다. 템플릿 폴더(`harness/templates`)는 설치 때 이미 지정돼 있습니다.
+3. 새 기록: 해당 폴더에 `F-003`처럼 ID를 제목으로 노트 생성 → Ctrl+P → "템플릿 삽입". `{{title}}`이 ID로, `{{date}}`가 오늘 날짜로 채워집니다.
+4. 선택: 커뮤니티 플러그인 **Dataview**를 켜면 `HOME.md`에 실패·규칙·결정·작업지시서 표가 보입니다.
+
+노트의 프론트매터가 옵시디언 속성으로 보이고, `[[F-001]]` 같은 링크로 실패 → 규칙 → 결정이 그래프로 이어집니다. check.py도 같은 프론트매터를 읽습니다. 속성 편집기가 저장하는 형식(목록은 `- 항목`)을 그대로 읽을 수 있습니다.

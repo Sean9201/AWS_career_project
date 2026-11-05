@@ -1,5 +1,5 @@
 ---
-id: WO-000
+id: "{{title}}"
 type: work_order
 status: active
 verify:

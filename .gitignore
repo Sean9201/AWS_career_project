@@ -5,5 +5,7 @@ __pycache__/
 outputs/
 data/cache/
 data/raw/
-# 옵시디언 개인 화면 상태. 플러그인 설정까지 공유하려면 이 줄 대신 .obsidian/workspace*.json만 제외
-.obsidian/
+
+# harness
+.obsidian/workspace*.json
+.obsidian/plugins/
