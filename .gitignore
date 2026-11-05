@@ -5,6 +5,8 @@ __pycache__/
 outputs/
 data/cache/
 data/raw/
+# 실제 공고 원문: 재배포 권한이 확인되지 않아 공개 저장소에 올리지 않는다 (D-004)
+data/real/
 
 # harness
 .obsidian/workspace*.json
