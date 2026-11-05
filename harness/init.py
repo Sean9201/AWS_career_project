@@ -12,7 +12,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SKELETON = HERE / 'skeleton'
 EMPTY_DIRS = ('docs/failures', 'docs/rules', 'docs/decisions', 'work_orders')
-GITIGNORE = ('.env', '__pycache__/', '.obsidian/workspace*.json', '.obsidian/plugins/')
+# Obsidian: share vault settings (app, templates, core plugins), keep per-person view state out of git.
+GITIGNORE = ('.env', '__pycache__/', '.obsidian/workspace*.json', '.obsidian/plugins/',
+             '.obsidian/appearance.json', '.obsidian/graph.json')
 SKIP = shutil.ignore_patterns('__pycache__', '*.pyc')
 
 

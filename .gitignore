@@ -9,3 +9,5 @@ data/raw/
 # harness
 .obsidian/workspace*.json
 .obsidian/plugins/
+.obsidian/appearance.json
+.obsidian/graph.json

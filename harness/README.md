@@ -20,7 +20,7 @@ python harness/init.py --name "프로젝트 이름"
 | 설치되는 것 | 출처 |
 |---|---|
 | `AGENTS.md`, `CLAUDE.md`, `HOME.md`, `harness.toml`, `docs/progress.md` | `skeleton/` |
-| `.obsidian/app.json`, `.obsidian/templates.json` | `skeleton/.obsidian/` |
+| `.obsidian/app.json`, `templates.json`, `core-plugins.json` | `skeleton/.obsidian/` |
 | `.github/workflows/harness.yml` (push·PR마다 check 실행) | `skeleton/.github/` |
 | `docs/failures/`, `docs/rules/`, `docs/decisions/`, `work_orders/` | 빈 폴더 |
 | `.gitignore` 항목 (`.env`, 옵시디언 개인 화면 상태 등) | 없는 줄만 추가 |
@@ -80,8 +80,8 @@ python -m unittest discover -s harness/tests -t .   # 하네스 자체 테스트
 
 ## 옵시디언
 
-1. 옵시디언에서 "폴더를 볼트로 열기"로 **프로젝트 폴더 자체**를 엽니다. 상위 폴더를 열면 다른 프로젝트의 `.env` 등이 볼트에 들어갑니다.
-2. 설정 → 핵심 플러그인 → **템플릿**을 켭니다. 템플릿 폴더(`harness/templates`)는 설치 때 이미 지정돼 있습니다.
+1. 옵시디언(한국어 메뉴에서는 볼트 = **보관함**) → 보관함 관리하기 → **"폴더를 보관함으로 열기"의 [열기]** → **프로젝트 폴더 자체**를 선택합니다. "새 보관함 만들기"를 누르면 프로젝트 안에 빈 폴더가 생기고 노트가 연결되지 않습니다. 상위 폴더를 열면 다른 프로젝트의 `.env` 등이 보관함에 들어갑니다.
+2. 템플릿 플러그인과 템플릿 폴더(`harness/templates`)는 설치 때 이미 켜져 있습니다. 보관함 설정(app, templates, core-plugins)은 git으로 공유하고, 화면 모양 같은 개인 설정은 `.gitignore`로 제외합니다.
 3. 새 기록: 해당 폴더에 `F-003`처럼 ID를 제목으로 노트 생성 → Ctrl+P → "템플릿 삽입". `{{title}}`이 ID로, `{{date}}`가 오늘 날짜로 채워집니다.
 4. 선택: 커뮤니티 플러그인 **Dataview**를 켜면 `HOME.md`에 실패·규칙·결정·작업지시서 표가 보입니다.
 

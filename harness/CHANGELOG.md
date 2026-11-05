@@ -3,6 +3,11 @@ type: harness
 ---
 # 하네스 변경 이력
 
+## 0.2.1 — 2026-11-05
+- 옵시디언 개인 화면 설정(`appearance.json`, `graph.json`)을 `.gitignore`에 추가. 보관함 설정(app, templates, core-plugins)만 공유
+- `skeleton/.obsidian/core-plugins.json` 추가: 설치하면 템플릿 플러그인이 이미 켜져 있음 (옵시디언 1.15에서 저장한 형식)
+- 템플릿 저장소의 `.gitignore`를 `/.obsidian/`(루트 고정)으로 수정. 0.2.0에서는 `skeleton/.obsidian/`이 커밋되지 않았음 (황승현 F-003)
+
 ## 0.2.0 — 2026-11-05
 - `harness/` 폴더 하나로 완결: `init.py`가 `skeleton/`의 기본 파일(AGENTS.md, CLAUDE.md, HOME.md, harness.toml, progress.md, 옵시디언 설정)과 기록 폴더를 설치. 기존 파일은 덮어쓰지 않음
 - 하네스 자체 테스트를 `harness/tests/`로 이동 (프로젝트 코드와 무관하게 실행)

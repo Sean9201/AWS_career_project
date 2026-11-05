@@ -1,7 +1,7 @@
 # 하네스 프로젝트 설정. 다른 프로젝트에서는 [[run]] 명령과 기준값만 바꾼다.
 [project]
 name = "채용공고 기반 학습경로 추천"
-harness_version = "0.2.0"
+harness_version = "0.2.1"
 
 [paths]
 failures = "docs/failures"

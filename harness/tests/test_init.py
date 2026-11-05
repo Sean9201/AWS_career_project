@@ -36,6 +36,14 @@ class InstallTest(unittest.TestCase):
         self.assertTrue(gitignore.startswith('dist/\n'))
         self.assertEqual(gitignore.count('# harness'), 1)
 
+    def test_obsidian_shares_vault_settings_but_not_personal_view(self):
+        install(self.root, 'x')
+        gitignore = (self.root / '.gitignore').read_text(encoding='utf-8').splitlines()
+        for personal in ('.obsidian/appearance.json', '.obsidian/graph.json', '.obsidian/workspace*.json'):
+            self.assertIn(personal, gitignore)
+        core = (self.root / '.obsidian/core-plugins.json').read_text(encoding='utf-8')
+        self.assertIn('"templates": true', core)
+
     def test_obsidian_templates_keep_their_placeholders(self):
         install(self.root, 'x')
         text = (self.root / 'harness/templates/failure.md').read_text(encoding='utf-8')
