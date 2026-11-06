@@ -8,7 +8,7 @@ from skillpath import extract_rules
 from skillpath.analyze import demand
 from skillpath.extract_bedrock import BedrockExtractor
 from skillpath.models import Claim
-from skillpath.pipeline import run
+from skillpath.pipeline import dictionary_gaps, run
 from skillpath.recommend import course_coverage, recommend
 from skillpath.sections import requirement, sentences
 from skillpath.skills import ROOT, SkillDictionary
@@ -35,13 +35,51 @@ class SkillMatchingTest(unittest.TestCase):
 
     def test_longest_alias_wins(self):
         self.assertEqual(self.names('Spring Boot와 MySQL, PostgreSQL'), ['Spring', 'MySQL', 'PostgreSQL'])
-        self.assertEqual(self.names('GitHub 사용'), [])
+        self.assertEqual(self.names('Airbyte 사용'), [])
 
     def test_canonical_from_free_text(self):
         self.assertEqual(SKILLS.canonical('k8s'), 'Kubernetes')
         self.assertEqual(SKILLS.canonical('AWS 운영'), 'AWS')
         self.assertIsNone(SKILLS.canonical('Airbyte'))
         self.assertIsNone(SKILLS.canonical('Java와 Python'))
+
+    # review-001 (approved 2026-11-07): aliases folded into existing names.
+    def test_review_001_aliases_fold_into_existing_names(self):
+        self.assertEqual(self.names('Continuous Integration 경험, 지속적 통합'), ['CI/CD', 'CI/CD'])
+        self.assertEqual(self.names('GitHub 사용'), ['Git'])
+        self.assertEqual(self.names('Spring Security, Spring Batch'), ['Spring', 'Spring'])
+
+    # review-001: names that stay separate from a look-alike, and short tokens that must not bleed into neighbours.
+    def test_review_001_new_names_stay_separate(self):
+        self.assertEqual(self.names('EKS 운영'), ['Amazon EKS'])
+        self.assertEqual(self.names('MCP(Model Context Protocol) 서버'), ['MCP', 'MCP'])
+        self.assertEqual(self.names('SQL Server와 PL/SQL'), ['MS SQL Server', 'PL/SQL'])
+        self.assertEqual(self.names('MSA 전환, Microservices'), ['MSA', 'MSA'])
+
+    def test_js_suffix_is_not_javascript(self):
+        # F-009: before the fix "Vue.js" counted as JavaScript through the "JS" alias (우대 3건 → 1건 on real data).
+        self.assertEqual(self.names('Three.js, Nuxt.js 경험'), [])
+        self.assertEqual(self.names('HTML/CSS/JS'), ['HTML', 'JavaScript'])
+        self.assertEqual(self.names('Vue.js와 Next.js'), ['Vue', 'Next.js'])
+
+    def test_short_korean_alias_is_not_added(self):
+        # '뷰' would match inside 리뷰/인터뷰 because Korean has no ASCII boundary, so Vue keeps ASCII aliases only.
+        self.assertEqual(self.names('코드 리뷰와 Vue.js'), ['Vue'])
+
+    def test_ignored_tags_are_never_skills(self):
+        self.assertTrue(SKILLS.is_ignored('성실성'))
+        self.assertTrue(SKILLS.is_ignored('artificial intelligence'))
+        self.assertIsNone(SKILLS.canonical('성실성'))
+        self.assertFalse(SKILLS.is_ignored('Airbyte'))
+
+
+class DictionaryGapTest(unittest.TestCase):
+    def test_gaps_hide_ignored_and_single_posting_tags_but_count_them(self):
+        postings = [{'id': 'a', 'provider_skills': ['Airbyte', '성실성', 'Flink']},
+                    {'id': 'b', 'provider_skills': ['Airbyte', 'Python']}]
+        gaps = dictionary_gaps(postings, SKILLS)
+        self.assertEqual(gaps['items'], [{'skill': 'Airbyte', 'postings': 2}])
+        self.assertEqual(gaps['omitted'], {'ignored': 1, 'below_min': 1, 'over_limit': 0})
 
 
 class SectionTest(unittest.TestCase):

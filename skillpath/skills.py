@@ -18,13 +18,16 @@ class Match:
 class SkillDictionary:
     def __init__(self, entries):
         self.entries = {k: v for k, v in entries.items() if not k.startswith('_')}
+        # Reviewed and excluded (traits, generic words): never a skill, never shown as a candidate again.
+        self._ignored = {name.casefold() for name in entries.get('_ignore', [])}
         names = [(alias, canon) for canon, entry in self.entries.items()
                  for alias in (canon, *entry.get('aliases', []))]
         self._lookup = {alias.casefold(): canon for alias, canon in names}
         # Longest alias first, so "Spring Boot" wins over "Spring" and "JavaScript" over "Java".
         names.sort(key=lambda pair: -len(pair[0]))
-        # ASCII-only boundaries: Korean particles may follow ("Python을") but "Java" in "JavaScript" may not.
-        self._patterns = [(re.compile(rf'(?<![A-Za-z0-9]){re.escape(alias)}(?![A-Za-z0-9+#])', re.IGNORECASE), canon)
+        # ASCII-only boundaries: Korean particles may follow ("Python을") but "Java" in "JavaScript" may not,
+        # and a leading "." marks a suffix, so the "js" in "Vue.js" or "Nuxt.js" is not JavaScript (F-009).
+        self._patterns = [(re.compile(rf'(?<![A-Za-z0-9.]){re.escape(alias)}(?![A-Za-z0-9+#])', re.IGNORECASE), canon)
                           for alias, canon in names]
 
     @classmethod
@@ -49,6 +52,10 @@ class SkillDictionary:
             return self._lookup[name.casefold()]
         matched = {m.skill for m in self.find(name)}
         return matched.pop() if len(matched) == 1 else None
+
+    def is_ignored(self, name):
+        """True for tags a human reviewed and excluded from the dictionary (see `_ignore` in skills.json)."""
+        return (name or '').strip().casefold() in self._ignored
 
     def names(self):
         return sorted(self.entries)

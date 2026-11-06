@@ -67,17 +67,26 @@ def run(jobs_path, courses_path, out_dir, extractor_name='rules'):
         'postings': len(postings), 'courses_n': len(courses), 'claims': len(verified),
         'status': dict(Counter(v.status for v in verified)),
     }
-    run_info['dictionary_gaps'] = dictionary_gaps(postings, skills)
+    gaps = dictionary_gaps(postings, skills)
+    run_info['dictionary_gaps'] = gaps['items']
+    run_info['dictionary_gaps_omitted'] = gaps['omitted']
     write(out / 'run.json', run_info)
     return run_info
 
 
-def dictionary_gaps(postings, skills, limit=30):
+def dictionary_gaps(postings, skills, limit=30, min_postings=2):
     """Skills the data provider tagged that our dictionary cannot map: candidates for a human to add.
-    Provider tags are not evidence; they only point at where the dictionary is blind."""
+    Provider tags are not evidence; they only point at where the dictionary is blind.
+    D-006: tags on the dictionary's ignore list are dropped, and tags seen in fewer than `min_postings`
+    postings are held back (they stay 'uncertain' and never reach the aggregate). Omitted counts are
+    returned so the screen can say how many it is not showing (R-001)."""
     counts = Counter(tag for p in postings for tag in set(p.get('provider_skills') or [])
                      if skills.canonical(tag) is None)
-    return [{'skill': tag, 'postings': n} for tag, n in counts.most_common(limit)]
+    kept = [(tag, n) for tag, n in counts.most_common() if not skills.is_ignored(tag)]
+    shown = [(tag, n) for tag, n in kept if n >= min_postings]
+    return {'items': [{'skill': tag, 'postings': n} for tag, n in shown[:limit]],
+            'omitted': {'ignored': len(counts) - len(kept), 'below_min': len(kept) - len(shown),
+                        'over_limit': max(0, len(shown) - limit)}}
 
 
 def main():

@@ -129,9 +129,16 @@ else:
     st.caption('불확실하거나 제외된 추출 결과가 없습니다.')
 if run.get('body_status'):
     st.caption('공고 본문 상태: ' + ', '.join(f'{BODY_LABELS.get(k, k)} {v}건' for k, v in run['body_status'].items()))
-if run.get('dictionary_gaps'):
+omitted = run.get('dictionary_gaps_omitted') or {}
+if run.get('dictionary_gaps') or any(omitted.values()):
     st.subheader('사전이 보지 못하는 기술 후보')
     st.caption('데이터 제공자가 붙인 태그 중 우리 사전이 표준명으로 바꾸지 못한 것입니다. 근거가 아니라 사전 보강 후보이며, '
-               '사람이 확인한 뒤 사전에 추가합니다. 성향 같은 비기술 태그도 섞여 있습니다.')
-    st.dataframe([{'태그': g['skill'], '공고 수': g['postings']} for g in run['dictionary_gaps']],
-                 hide_index=True, use_container_width=True)
+               '공고 2건 이상에서 나온 것만 보여 주고 사람이 확인한 뒤 사전에 추가합니다.')
+    if run.get('dictionary_gaps'):
+        st.dataframe([{'태그': g['skill'], '공고 수': g['postings']} for g in run['dictionary_gaps']],
+                     hide_index=True, use_container_width=True)
+    else:
+        st.caption('검토를 기다리는 후보가 없습니다.')
+    if any(omitted.values()):
+        st.caption(f"표시하지 않은 태그: 공고 1건짜리 {omitted.get('below_min', 0)}개(불확실로 남김) · "
+                   f"사람이 제외한 목록 {omitted.get('ignored', 0)}개 · 표시 한도 초과 {omitted.get('over_limit', 0)}개")
