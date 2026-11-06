@@ -4,13 +4,12 @@ from pathlib import Path
 
 import streamlit as st
 
+from skillpath.present import LABELS as REQUIREMENT_LABELS, evidence_label, group_evidence
 from skillpath.recommend import recommend
-from skillpath.sections import SECTION_LABELS
 from skillpath.skills import ROOT, SkillDictionary
 
 DATASETS = {'실제 공고 (Techmap)': ROOT / 'outputs' / 'real', '합성 예시': ROOT / 'outputs' / 'latest'}
 STATUS_LABELS = {'confirmed': '확인', 'uncertain': '불확실', 'rejected': '제외'}
-REQUIREMENT_LABELS = {'required': '필수', 'preferred': '우대', 'responsibility': '업무', 'unknown': '구분 없음'}
 BODY_LABELS = {'has_sections': '자격요건·우대사항 구분됨', 'no_sections': '본문은 있으나 구분 없음', 'no_body': '본문 없음(이미지 등)'}
 REASON_LABELS = {'evidence_not_in_source': '근거 문장이 원문에 없음', 'skill_not_in_dictionary': '사전에 없는 기술명',
                  'skill_not_in_evidence': '근거 문장에 해당 기술이 없음', 'requirement_conflict': '필수/우대 판정이 원문과 다름',
@@ -39,7 +38,9 @@ if run.get('jobs_synthetic', run['synthetic']):
     st.warning('합성 공고로 흐름만 검증한 결과입니다. 실제 채용시장 분석 결과가 아닙니다.')
 else:
     sources = ', '.join(f'{k} {v}' for k, v in run.get('sources', {}).items())
-    st.info(f"수집된 국내 공고 {run['postings']}건 기준 (Techmap API, 원 출처: {sources}). "
+    merged = run.get('cross_source_merged', 0)
+    merged_note = f' 여러 사이트에 올라온 같은 공고 {merged}건은 하나로 합쳤습니다.' if merged else ''
+    st.info(f"수집된 국내 공고 {run['postings']}건 기준 (Techmap API, 원 출처: {sources}).{merged_note} "
             '대한민국 전체 채용시장의 대표값이 아닙니다.')
 if run.get('courses_synthetic'):
     st.warning('교육과정은 아직 합성 데이터입니다. 추천 과정은 흐름 확인용입니다.')
@@ -62,9 +63,10 @@ base = role_rows[0] if role_rows else {'postings': 0, 'excluded_postings': 0}
 excluded = f" (본문이 이미지라 제외 {base['excluded_postings']}건)" if base['excluded_postings'] else ''
 st.caption(f"{role} 공고 중 본문을 읽을 수 있는 {base['postings']}건 기준{excluded}. "
            '필수 → 언급 비율 순. 모든 숫자는 코드가 원문에서 확인한 근거만으로 계산합니다. '
-           '"구분 없음"은 필수/우대를 원문에서 판단할 수 없는 언급입니다.')
+           '필수·우대·업무는 공고의 해당 섹션(또는 문장의 "필수/우대" 표기)에서 확인한 것이고, '
+           '"언급만"은 제목·소개처럼 섹션 밖에 등장해 필수/우대를 판단하지 않은 것입니다. 한 공고는 한 번만 셉니다.')
 st.dataframe([{'기술': r['skill'], '필수': r['required_n'], '우대': r['preferred_n'],
-               '업무': r['responsibility_n'], '구분 없음': r['unknown_n'],
+               '업무': r['responsibility_n'], '언급만': r['unknown_n'],
                '언급 공고': r['mention_n'], '언급 비율': f"{r['mention_share']:.0%}", '불확실': r['uncertain_n'],
                '내 상태': '부족' if r['skill'] in gap_items else '보유',
                '확인된 과정': (', '.join(p['course']['title'] for p in gap_items[r['skill']]['courses']) or '없음')
@@ -74,12 +76,17 @@ picked = st.selectbox('근거 문장 보기', [r['skill'] for r in role_rows]) i
 for r in role_rows:
     if r['skill'] != picked:
         continue
-    for e in r['evidence']:
-        p = by_posting[e['posting_id']]
-        req = REQUIREMENT_LABELS[e['requirement']]
+    groups = group_evidence(r['evidence'])
+    st.caption(f'공고 {len(groups)}건. 공고마다 판정 한 줄, 그 아래에 근거 문장과 판정 이유를 보여줍니다.')
+    for g in groups:
+        p = by_posting[g['posting_id']]
         link = f" · [원문]({p['url']})" if p.get('url') else ''
         source = f" · {p['source']}" if p.get('source') else ''
-        st.markdown(f"- **{p['company']} · {p['title']}** ({SECTION_LABELS[e['section']]}, {req}{source}{link}): “{e['quote']}”")
+        if p.get('also_at'):
+            source += ' · 같은 공고 ' + ', '.join(f"[{a['source']}]({a['url']})" for a in p['also_at'])
+        lines = [f"- **{p['company']} · {p['title']}** — **{REQUIREMENT_LABELS[g['requirement']]}**{source}{link}"]
+        lines += [f"  - “{s['quote']}” — {evidence_label(s['section'], s['requirement'])}" for s in g['sentences']]
+        st.markdown('\n'.join(lines))
 
 st.header('2. 나에게 부족한 기술과 추천 교육')
 if result['unrecognized_inputs']:

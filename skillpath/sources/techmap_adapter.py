@@ -2,9 +2,11 @@
 
 python -m skillpath.sources.techmap_adapter --role "백엔드 개발자" --out data/real/jobs.json
 
-Nothing is fetched here. Duplicates (same posting URL) are dropped and counted. A posting whose
-description has no recognisable text body (e.g. an image-only ad) is kept with body_status
-`no_body` so it is visible in the dataset but excluded from requirement ratios.
+Nothing is fetched here. Duplicates are dropped at two levels: the same URL seen twice, and the
+same job published on several sites (see dedupe.py), which keeps one representative and lists
+the other copies in `also_at`. A posting whose description has no recognisable text body (e.g.
+an image-only ad) is kept with body_status `no_body` so it is visible in the dataset but
+excluded from requirement ratios.
 """
 import argparse
 import hashlib
@@ -12,6 +14,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from ..dedupe import merge_duplicates
 from ..segment import segment
 from ..skills import ROOT
 from .techmap import OUT
@@ -63,8 +66,9 @@ def build(raw_files, role):
                     continue
                 seen.add(posting['url'])
                 postings.append(posting)
+    postings, cross_source = merge_duplicates(postings)
     summary = {
-        'postings': len(postings), 'duplicates_dropped': duplicates,
+        'postings': len(postings), 'duplicates_dropped': duplicates, 'cross_source_merged': cross_source,
         'body_status': dict(Counter(p['body_status'] for p in postings)),
         'sources': dict(Counter(p['source'] for p in postings)),
         'languages': dict(Counter(p['language'] for p in postings)),

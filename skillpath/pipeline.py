@@ -63,6 +63,7 @@ def run(jobs_path, courses_path, out_dir, extractor_name='rules'):
         'jobs_synthetic': jobs_synthetic, 'courses_synthetic': courses_synthetic,
         'body_status': dict(Counter(p.get('body_status', 'has_sections') for p in postings)),
         'sources': dict(Counter(p.get('source', 'fixture') for p in postings)),
+        'cross_source_merged': sum(len(p.get('also_at') or []) for p in postings),
         'postings': len(postings), 'courses_n': len(courses), 'claims': len(verified),
         'status': dict(Counter(v.status for v in verified)),
     }

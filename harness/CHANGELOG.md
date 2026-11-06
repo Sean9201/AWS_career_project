@@ -3,6 +3,9 @@ type: harness
 ---
 # 하네스 변경 이력
 
+## 0.2.2 — 2026-11-06
+- 원인 유형 `unclear-output` 추가: 결과는 맞지만 사용자가 뜻을 알 수 없는 경우 (황승현 F-008)
+
 ## 0.2.1 — 2026-11-05
 - 옵시디언 개인 화면 설정(`appearance.json`, `graph.json`)을 `.gitignore`에 추가. 보관함 설정(app, templates, core-plugins)만 공유
 - `skeleton/.obsidian/core-plugins.json` 추가: 설치하면 템플릿 플러그인이 이미 켜져 있음 (옵시디언 1.15에서 저장한 형식)

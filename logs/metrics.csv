@@ -5,3 +5,5 @@ run_at,harness_version,work_order,ok,problems,commands,metrics
 2026-11-05T11:21:30+00:00,0.2.1,WO-001,True,0,harness:ok:0.7s;tests:ok:0.7s;pipeline:ok:0.2s;eval:ok:0.2s,"{""eval.labeled.f1"": 1.0}"
 2026-11-05T11:22:30+00:00,0.2.1,WO-001,True,0,harness:ok:0.7s;tests:ok:0.5s;pipeline:ok:0.2s;eval:ok:0.2s,"{""eval.labeled.f1"": 1.0}"
 2026-11-05T13:33:23+00:00,0.2.1,WO-001,True,0,harness:ok:3.1s;tests:ok:1.1s;pipeline:ok:0.4s;eval:ok:0.5s,"{""eval.labeled.f1"": 1.0}"
+2026-11-06T12:49:45+00:00,0.2.1,WO-001,True,0,harness:ok:1.6s;tests:ok:1.1s;pipeline:ok:0.4s;eval:ok:0.4s,"{""eval.labeled.f1"": 1.0}"
+2026-11-06T12:59:31+00:00,0.2.2,WO-001,True,0,harness:ok:1.2s;tests:ok:0.9s;pipeline:ok:0.3s;eval:ok:0.3s,"{""eval.labeled.f1"": 1.0}"
